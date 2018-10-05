@@ -112,8 +112,9 @@ func buildInfo() string {
 }
 
 func main() {
-	// I HATE THIS HAS TO BE IN MAIN! Why am I not good enough yet??
+	defer logger.FinalizeLogger()
 
+	// I HATE THIS HAS TO BE IN MAIN! Why am I not good enough yet??
 	i2c, err := i2c.NewI2C(0x27, 1)
 	if err != nil {
 		lg.Fatalf("i2c.NewI2C: %s", err)
