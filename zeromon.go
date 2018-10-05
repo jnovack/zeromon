@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"sync"
 	"syscall"
 	"time"
@@ -84,6 +85,19 @@ var (
 	}, []string{"room"})
 )
 
+var (
+	// Version supplied by the linker
+	Version string
+	// Revision supplied by the linker
+	Revision string
+	// GoVersion supplied by the runtime
+	GoVersion = runtime.Version()
+)
+
+func buildInfo() string {
+	return fmt.Sprintf("zeromon version %s git revision %s go version %s", Version, Revision, GoVersion)
+}
+
 func main() {
 	// I HATE THIS HAS TO BE IN MAIN! Why am I not good enough yet??
 
@@ -138,6 +152,7 @@ func main() {
 }
 
 func init() {
+	buildInfo()
 	logger.ChangePackageLogLevel("dht", logger.ErrorLevel)
 	logger.ChangePackageLogLevel("i2c", logger.InfoLevel)
 
