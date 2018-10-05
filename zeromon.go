@@ -140,11 +140,11 @@ func main() {
 			if timestamp.Unix() > 0 {
 				lg.Infof("Updated: Temperature = %.1f°F, Humidity = %.1f%%, Last Checked = %s, Unix = %d",
 					temp, hum, humanize.Time(timestamp), timestamp.Unix())
-				go WriteMessage(lcd, fmt.Sprintf("Temp: %.1fF", temp), device.SHOW_LINE_1)
-				go WriteMessage(lcd, fmt.Sprintf("Hum : %.1f%%", hum), device.SHOW_LINE_2)
 				promTemp.With(prometheus.Labels{"room": &opts.room}).Set(float64(temp))
 				promHum.With(prometheus.Labels{"room": &opts.room}).Set(float64(hum))
 				promTime.With(prometheus.Labels{"room": &opts.room}).Set(float64(timestamp.Unix()))
+				go WriteMessage(lcd, fmt.Sprintf("Temp: %.1fF     ", temp), device.SHOW_LINE_1)
+				go WriteMessage(lcd, fmt.Sprintf("Hum : %.1f%%     ", hum), device.SHOW_LINE_2)
 			}
 			time.Sleep(5000 * time.Millisecond)
 		}
