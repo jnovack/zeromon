@@ -210,6 +210,8 @@ func funcWithChanResult() {
 	return
 }
 
+//* These should probably be in their own file or use the package ones.
+// WriteMessage writes a message to the LCD at the defined line, char 0
 func WriteMessage(lcd *device.Lcd, str string, line device.ShowOptions) {
 	m.Lock()
 	err := lcd.ShowMessage(str, line)
@@ -220,6 +222,7 @@ func WriteMessage(lcd *device.Lcd, str string, line device.ShowOptions) {
 	return
 }
 
+// BacklightOn turns the backlight on
 func BacklightOn(lcd *device.Lcd) {
 	m.Lock()
 	err := lcd.BacklightOn()
@@ -230,6 +233,7 @@ func BacklightOn(lcd *device.Lcd) {
 	return
 }
 
+// BacklightOff turns the backlight off
 func BacklightOff(lcd *device.Lcd) {
 	m.Lock()
 	err := lcd.BacklightOff()
@@ -240,6 +244,7 @@ func BacklightOff(lcd *device.Lcd) {
 	return
 }
 
+// Clear clears the LCD display
 func Clear(lcd *device.Lcd) error {
 	m.Lock()
 	err := lcd.Clear()
@@ -247,6 +252,7 @@ func Clear(lcd *device.Lcd) error {
 	return err
 }
 
+// Home moves the cursor back to 0,0
 func Home(lcd *device.Lcd) error {
 	m.Lock()
 	err := lcd.Home()
