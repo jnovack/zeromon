@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -10,15 +11,27 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/coreos/pkg/flagutil"
 	sensor "github.com/d2r2/go-dht"
 	device "github.com/d2r2/go-hd44780"
 	i2c "github.com/d2r2/go-i2c"
 	logger "github.com/d2r2/go-logger"
 	humanize "github.com/dustin/go-humanize"
-
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
+
+// CmdLineOpts structure for the command line options
+type CmdLineOpts struct {
+	room        string
+	apiKey      string
+	apiURL      string
+	apiUserName string
+	port        int
+	version     bool
+}
+
+var opts CmdLineOpts
 
 var lg = logger.NewPackageLogger("main", logger.NotifyLevel)
 var m sync.Mutex
@@ -126,18 +139,17 @@ func main() {
 			if timestamp.Unix() > 0 {
 				lg.Notifyf("Updated: Temperature = %.1f°F, Humidity = %.1f%%, Last Checked = %s, Unix = %d",
 					temp, hum, humanize.Time(timestamp), timestamp.Unix())
-				promTemp.With(prometheus.Labels{"room": "office"}).Set(float64(temp))
-				promHum.With(prometheus.Labels{"room": "office"}).Set(float64(hum))
-				promTime.With(prometheus.Labels{"room": "office"}).Set(float64(timestamp.Unix()))
 				go WriteMessage(lcd, fmt.Sprintf("Temp: %.1fF", temp), device.SHOW_LINE_1)
 				go WriteMessage(lcd, fmt.Sprintf("Hum : %.1f%%", hum), device.SHOW_LINE_2)
+				promTemp.With(prometheus.Labels{"room": &opts.room}).Set(float64(temp))
+				promHum.With(prometheus.Labels{"room": &opts.room}).Set(float64(hum))
+				promTime.With(prometheus.Labels{"room": &opts.room}).Set(float64(timestamp.Unix()))
 			}
 			time.Sleep(5000 * time.Millisecond)
 		}
 	}()
 
 	BacklightOn(lcd)
-
 	//* HTTP Handler *//
 	// go func() {
 	// The Handler function provides a default handler to expose metrics
@@ -155,6 +167,15 @@ func init() {
 	buildInfo()
 	logger.ChangePackageLogLevel("dht", logger.ErrorLevel)
 	logger.ChangePackageLogLevel("i2c", logger.InfoLevel)
+
+	flag.IntVar(&opts.port, "port", 9204, "prometheus metrics port")
+	flag.BoolVar(&opts.version, "version", false, "print version and exit")
+	flagutil.SetFlagsFromEnv(flag.CommandLine, "ZEROMON")
+
+	if opts.version {
+		// already printed version
+		os.Exit(0)
+	}
 
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
