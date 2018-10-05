@@ -128,6 +128,9 @@ func main() {
 	}
 
 	BacklightOff(lcd)
+	go WriteMessage(lcd, "ZeroMon", device.SHOW_LINE_1)
+	go WriteMessage(lcd, fmt.Sprintf("%s", Version), device.SHOW_LINE_2)
+
 	//* Metrics Handler *//
 	go func() {
 		for {
