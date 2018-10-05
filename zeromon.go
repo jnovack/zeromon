@@ -156,7 +156,8 @@ func main() {
 	// The Handler function provides a default handler to expose metrics
 	// via an HTTP server. "/metrics" is the usual endpoint for that.
 	http.Handle("/metrics", promhttp.Handler())
-	err = http.ListenAndServe(":8080", nil)
+	// https://github.com/prometheus/prometheus/wiki/Default-port-allocations
+	err = http.ListenAndServe(":9204", nil)
 	if err != nil {
 		lg.Errorf("http err: %s", err)
 	}
