@@ -174,8 +174,6 @@ func funcWithChanResult() {
 	return
 }
 
-func
-
 func WriteMessage(lcd *device.Lcd, str string, line device.ShowOptions) {
 	m.Lock()
 	err := lcd.ShowMessage(str, line)
