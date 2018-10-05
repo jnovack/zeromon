@@ -208,15 +208,14 @@ func BacklightOff(lcd *device.Lcd) {
 
 func Clear(lcd *device.Lcd) error {
 	m.Lock()
-	err := lcd.writeByte(device.CMD_Clear_Display, 0)
+	err := lcd.Clear()
 	m.Unlock()
 	return err
 }
 
 func Home(lcd *device.Lcd) error {
 	m.Lock()
-	err := lcd.writeByte(device.CMD_Return_HomeCMD_Return_Home, 0)
-	time.Sleep(3 * time.Millisecond)
+	err := lcd.Home()
 	m.Unlock()
 	return err
 }
