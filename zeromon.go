@@ -138,7 +138,7 @@ func main() {
 			timestamp := env.GetTimestamp()
 
 			if timestamp.Unix() > 0 {
-				lg.Notifyf("Updated: Temperature = %.1f°F, Humidity = %.1f%%, Last Checked = %s, Unix = %d",
+				lg.Infof("Updated: Temperature = %.1f°F, Humidity = %.1f%%, Last Checked = %s, Unix = %d",
 					temp, hum, humanize.Time(timestamp), timestamp.Unix())
 				go WriteMessage(lcd, fmt.Sprintf("Temp: %.1fF", temp), device.SHOW_LINE_1)
 				go WriteMessage(lcd, fmt.Sprintf("Hum : %.1f%%", hum), device.SHOW_LINE_2)
