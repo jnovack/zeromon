@@ -9,7 +9,10 @@ all: build
 
 .PHONY: deps
 deps:
-	go list -f '{{ join .Imports "\n" }}' | xargs go get -vu
+	go list -f '{{ join .Imports "\n" }}' | sort | uniq | grep "/" | xargs go get -v
+
+.PHONY: upgrade
+	go list -f '{{ join .Imports "\n" }}' | sort | uniq | grep "/" | xargs go get -v -u
 
 .PHONY: build
 build:
