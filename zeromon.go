@@ -31,6 +31,7 @@ type CmdLineOpts struct {
 	apiUsername string
 	port        int
 	version     bool
+	intLevel    int
 }
 
 var opts CmdLineOpts
