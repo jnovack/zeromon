@@ -19,6 +19,7 @@ import (
 	humanize "github.com/dustin/go-humanize"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/tabalt/pidfile"
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
@@ -40,6 +41,7 @@ type CmdLineOpts struct {
 	port     int
 	version  bool
 	intLevel int
+	pidfile  string
 }
 
 var opts CmdLineOpts
@@ -205,6 +207,7 @@ func init() {
 	flag.StringVar(&opts.aiokey, "aiokey", "", "io.adafruit.com API Key (AIO)")
 	flag.StringVar(&opts.aiouser, "aiouser", "", "io.adafruit.com Username")
 	flag.StringVar(&opts.room, "room", "", "room name")
+	flag.StringVar(&opts.pidfile, "pidfile", "/var/run/zeromon.pid", "pidfile")
 	flag.IntVar(&opts.port, "port", 9204, "prometheus metrics port")
 	flag.IntVar(&opts.intLevel, "loglevel", 4, "log level (0=emerg through 6=debug)")
 	flag.BoolVar(&opts.version, "version", false, "print version and exit")
@@ -215,6 +218,8 @@ func init() {
 		os.Exit(0)
 	}
 
+	pid, _ := pidfile.Create(opts.pidfile)
+
 	logger.ChangePackageLogLevel("main", LogLevel(opts.intLevel))
 
 	c := make(chan os.Signal)
@@ -222,7 +227,7 @@ func init() {
 	go func() {
 		<-c
 		BacklightOff(lcd)
-		// Run Cleanup
+		_ = pid.Clear()
 		client.Disconnect(250)
 		os.Exit(0)
 	}()
