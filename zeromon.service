@@ -1,0 +1,15 @@
+[Unit]
+Description=Raspberry Pi Environment Monitor
+After=nfs-client.target
+
+[Service]
+ExecStart=/mnt/zeromon/zeromon
+Type=Simple
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=30
+StartLimitBurst=3
+PIDFile=/var/run/zeromon.pid
+
+[Install]
+WantedBy=multi-user.target
