@@ -23,6 +23,14 @@ import (
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
+/*
+	AUX1 - GPIO 4 (Pin 7)
+	AUX2 - GPIO 23 (Pin 16)
+	AUX3 - GPIO 17 (Pin 11)
+		   GPIO 27 (Pin 13)
+		   GPIO 22 (Pin 15)
+*/
+
 // CmdLineOpts structure for the command line options
 type CmdLineOpts struct {
 	room        string
