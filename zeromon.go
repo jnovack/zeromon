@@ -198,7 +198,7 @@ func main() {
 }
 
 func init() {
-	buildInfo()
+	fmt.Println(buildInfo())
 	logger.ChangePackageLogLevel("dht", logger.ErrorLevel)
 	logger.ChangePackageLogLevel("i2c", logger.ErrorLevel)
 
