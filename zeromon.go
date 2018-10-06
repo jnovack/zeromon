@@ -26,7 +26,7 @@ type CmdLineOpts struct {
 	room        string
 	apiKey      string
 	apiURL      string
-	apiUserName string
+	apiUsername string
 	port        int
 	version     bool
 }
@@ -143,9 +143,9 @@ func main() {
 			if timestamp.Unix() > 0 {
 				lg.Infof("Updated: Temperature = %.1f°F, Humidity = %.1f%%, Last Checked = %s, Unix = %d",
 					temp, hum, humanize.Time(timestamp), timestamp.Unix())
-				promTemp.With(prometheus.Labels{"room": &opts.room}).Set(float64(temp))
-				promHum.With(prometheus.Labels{"room": &opts.room}).Set(float64(hum))
-				promTime.With(prometheus.Labels{"room": &opts.room}).Set(float64(timestamp.Unix()))
+				promTemp.With(prometheus.Labels{"room": opts.room}).Set(float64(temp))
+				promHum.With(prometheus.Labels{"room": opts.room}).Set(float64(hum))
+				promTime.With(prometheus.Labels{"room": opts.room}).Set(float64(timestamp.Unix()))
 				go WriteMessage(lcd, fmt.Sprintf("Temp: %.1fF     ", temp), device.SHOW_LINE_1)
 				go WriteMessage(lcd, fmt.Sprintf("Hum : %.1f%%     ", hum), device.SHOW_LINE_2)
 			}
@@ -173,7 +173,11 @@ func init() {
 	logger.ChangePackageLogLevel("dht", logger.ErrorLevel)
 	logger.ChangePackageLogLevel("i2c", logger.InfoLevel)
 
+	flag.StringVar(&opts.apiKey, "key", "", "io.adafruit.com API Key (AIO)")
+	flag.StringVar(&opts.apiUsername, "username", "", "io.adafruit.com Username")
+	flag.StringVar(&opts.room, "room", "", "room name")
 	flag.IntVar(&opts.port, "port", 9204, "prometheus metrics port")
+	flag.IntVar(&opts.intLevel, "loglevel", 4, "log level (0=emerg through 6=debug)")
 	flag.BoolVar(&opts.version, "version", false, "print version and exit")
 	flagutil.SetFlagsFromEnv(flag.CommandLine, "ZEROMON")
 
@@ -216,6 +220,7 @@ func funcWithChanResult() {
 }
 
 //* These should probably be in their own file or use the package ones.
+
 // WriteMessage writes a message to the LCD at the defined line, char 0
 func WriteMessage(lcd *device.Lcd, str string, line device.ShowOptions) {
 	m.Lock()
