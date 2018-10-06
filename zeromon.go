@@ -19,6 +19,8 @@ import (
 	humanize "github.com/dustin/go-humanize"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+
+	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
 // CmdLineOpts structure for the command line options
@@ -36,6 +38,8 @@ var opts CmdLineOpts
 var lg = logger.NewPackageLogger("main", logger.NotifyLevel)
 var m sync.Mutex
 var lcd *device.Lcd
+var client MQTT.Client
+var token MQTT.Token
 
 // Environment structure of temperature/humidity
 type Environment struct {
@@ -153,6 +157,22 @@ func main() {
 		}
 	}()
 
+	go func() {
+		for {
+			go funcWithChanResult()
+
+			timestamp := env.GetTimestamp()
+
+			if timestamp.Unix() > 0 {
+				temp := env.GetTemperature()
+				hum := env.GetHumidity()
+				go publishData("temperature", fmt.Sprintf("%.1f", temp))
+				go publishData("humidity", fmt.Sprintf("%.1f", hum))
+			}
+			time.Sleep(30 * time.Second)
+		}
+	}()
+
 	BacklightOn(lcd)
 	//* HTTP Handler *//
 	// go func() {
@@ -186,12 +206,15 @@ func init() {
 		os.Exit(0)
 	}
 
+	logger.ChangePackageLogLevel("main", LogLevel(opts.intLevel))
+
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
 		BacklightOff(lcd)
 		// Run Cleanup
+		client.Disconnect(250)
 		os.Exit(0)
 	}()
 
@@ -199,6 +222,21 @@ func init() {
 	prometheus.MustRegister(promHum)
 	prometheus.MustRegister(promTime)
 
+	if opts.apiUsername != "" && opts.apiKey != "" && opts.room != "" {
+		mqtt := MQTT.NewClientOptions()
+		mqtt.AddBroker("tcp://io.adafruit.com:1883")
+		mqtt.SetClientID("github.com/jnovack/zeromon")
+		mqtt.SetUsername(opts.apiUsername)
+		mqtt.SetPassword(opts.apiKey)
+		mqtt.SetCleanSession(false)
+		client = MQTT.NewClient(mqtt)
+		if token = client.Connect(); token.Wait() && token.Error() != nil {
+			panic(token.Error())
+		}
+		lg.Infof("Publishing to io.adafruit.com:1883/%s", opts.apiUsername)
+	} else {
+		lg.Warnf("Not publishing statistics.  Username: %s, Key: %s", opts.apiUsername, opts.apiKey)
+	}
 }
 
 func readSensor(done chan bool) {
@@ -268,4 +306,32 @@ func Home(lcd *device.Lcd) error {
 	err := lcd.Home()
 	m.Unlock()
 	return err
+}
+
+func publishData(key string, value string) {
+	topic := fmt.Sprintf("%s/feeds/%s-%s", opts.apiUsername, opts.room, key)
+	lg.Debugf("Publishing '%s' to %s", value, topic)
+	token := client.Publish(topic, byte(0), false, value)
+	token.Wait()
+}
+
+func LogLevel(i int) logger.LogLevel {
+	switch i {
+	case 0:
+		return logger.FatalLevel
+	case 1:
+		return logger.PanicLevel
+	case 2:
+		return logger.ErrorLevel
+	case 3:
+		return logger.WarnLevel
+	case 4:
+		return logger.NotifyLevel
+	case 5:
+		return logger.InfoLevel
+	case 6:
+		return logger.DebugLevel
+	default:
+		return logger.InfoLevel
+	}
 }
