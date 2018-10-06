@@ -1,9 +1,10 @@
 [Unit]
 Description=Raspberry Pi Environment Monitor
-After=nfs-client.target
+After=network.target
 
 [Service]
-ExecStart=/mnt/zeromon/zeromon
+ExecStart=/usr/local/bin/zeromon
+EnvironmentFile=/etc/zeromon.env
 Type=Simple
 Restart=on-failure
 RestartSec=5
