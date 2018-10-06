@@ -200,7 +200,7 @@ func main() {
 func init() {
 	buildInfo()
 	logger.ChangePackageLogLevel("dht", logger.ErrorLevel)
-	logger.ChangePackageLogLevel("i2c", logger.InfoLevel)
+	logger.ChangePackageLogLevel("i2c", logger.ErrorLevel)
 
 	flag.StringVar(&opts.apiKey, "key", "", "io.adafruit.com API Key (AIO)")
 	flag.StringVar(&opts.apiUsername, "username", "", "io.adafruit.com Username")
