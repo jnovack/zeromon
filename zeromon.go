@@ -33,13 +33,13 @@ import (
 
 // CmdLineOpts structure for the command line options
 type CmdLineOpts struct {
-	room        string
-	apiKey      string
-	apiURL      string
-	apiUsername string
-	port        int
-	version     bool
-	intLevel    int
+	room     string
+	aiokey   string
+	apiURL   string
+	aiouser  string
+	port     int
+	version  bool
+	intLevel int
 }
 
 var opts CmdLineOpts
@@ -202,8 +202,8 @@ func init() {
 	logger.ChangePackageLogLevel("dht", logger.ErrorLevel)
 	logger.ChangePackageLogLevel("i2c", logger.ErrorLevel)
 
-	flag.StringVar(&opts.apiKey, "key", "", "io.adafruit.com API Key (AIO)")
-	flag.StringVar(&opts.apiUsername, "username", "", "io.adafruit.com Username")
+	flag.StringVar(&opts.aiokey, "aiokey", "", "io.adafruit.com API Key (AIO)")
+	flag.StringVar(&opts.aiouser, "aiouser", "", "io.adafruit.com Username")
 	flag.StringVar(&opts.room, "room", "", "room name")
 	flag.IntVar(&opts.port, "port", 9204, "prometheus metrics port")
 	flag.IntVar(&opts.intLevel, "loglevel", 4, "log level (0=emerg through 6=debug)")
@@ -231,20 +231,20 @@ func init() {
 	prometheus.MustRegister(promHum)
 	prometheus.MustRegister(promTime)
 
-	if opts.apiUsername != "" && opts.apiKey != "" && opts.room != "" {
+	if opts.aiouser != "" && opts.aiokey != "" && opts.room != "" {
 		mqtt := MQTT.NewClientOptions()
 		mqtt.AddBroker("tcp://io.adafruit.com:1883")
 		mqtt.SetClientID("github.com/jnovack/zeromon")
-		mqtt.SetUsername(opts.apiUsername)
-		mqtt.SetPassword(opts.apiKey)
+		mqtt.SetUsername(opts.aiouser)
+		mqtt.SetPassword(opts.aiokey)
 		mqtt.SetCleanSession(false)
 		client = MQTT.NewClient(mqtt)
 		if token = client.Connect(); token.Wait() && token.Error() != nil {
 			panic(token.Error())
 		}
-		lg.Infof("Publishing to io.adafruit.com:1883/%s", opts.apiUsername)
+		lg.Infof("Publishing to io.adafruit.com:1883/%s", opts.aiouser)
 	} else {
-		lg.Warnf("Not publishing statistics.  Username: %s, Key: %s", opts.apiUsername, opts.apiKey)
+		lg.Warnf("Not publishing statistics.  Username: %s, Key: %s", opts.aiouser, opts.aiokey)
 	}
 }
 
@@ -318,7 +318,7 @@ func Home(lcd *device.Lcd) error {
 }
 
 func publishData(key string, value string) {
-	topic := fmt.Sprintf("%s/feeds/%s-%s", opts.apiUsername, opts.room, key)
+	topic := fmt.Sprintf("%s/feeds/%s-%s", opts.aiouser, opts.room, key)
 	lg.Debugf("Publishing '%s' to %s", value, topic)
 	token := client.Publish(topic, byte(0), false, value)
 	token.Wait()
