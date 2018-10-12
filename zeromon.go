@@ -228,7 +228,9 @@ func init() {
 		<-c
 		BacklightOff(lcd)
 		_ = pid.Clear()
-		client.Disconnect(250)
+		if client != nil {
+			client.Disconnect(250)
+		}
 		os.Exit(0)
 	}()
 
