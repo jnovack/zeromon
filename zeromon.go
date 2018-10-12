@@ -323,10 +323,12 @@ func Home(lcd *device.Lcd) error {
 }
 
 func publishData(key string, value string) {
-	topic := fmt.Sprintf("%s/feeds/%s-%s", opts.aiouser, opts.room, key)
-	lg.Debugf("Publishing '%s' to %s", value, topic)
-	token := client.Publish(topic, byte(0), false, value)
-	token.Wait()
+	if opts.aiouser != "" && opts.aiokey != "" && opts.room != "" {
+		topic := fmt.Sprintf("%s/feeds/%s-%s", opts.aiouser, opts.room, key)
+		lg.Debugf("Publishing '%s' to %s", value, topic)
+		token := client.Publish(topic, byte(0), false, value)
+		token.Wait()
+	}
 }
 
 func LogLevel(i int) logger.LogLevel {
