@@ -19,7 +19,7 @@ uninstall:
 
 .PHONY: deps
 deps:
-	go list -f '{{ join .Imports "\n" }}' | sort | uniq | grep "/" | xargs go get -v
+	go list -f '{{ join .Imports "\n" }}' | sort | uniq | grep "/" | grep -v "golang.org/x" | xargs go get -v
 
 .PHONY: upgrade
 upgrade:
