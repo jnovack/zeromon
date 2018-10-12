@@ -115,9 +115,9 @@ var (
 
 var (
 	// Version supplied by the linker
-	Version string
+	Version = "v0.0.0"
 	// Revision supplied by the linker
-	Revision string
+	Revision = "00000000"
 	// GoVersion supplied by the runtime
 	GoVersion = runtime.Version()
 )
