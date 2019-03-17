@@ -250,9 +250,9 @@ func init() {
 		if token = client.Connect(); token.Wait() && token.Error() != nil {
 			panic(token.Error())
 		}
-		lg.Infof("Publishing to io.adafruit.com:1883/%s", opts.aiouser)
+		lg.Notifyf("Publishing to io.adafruit.com:1883/%s", opts.aiouser)
 	} else {
-		lg.Warnf("Not publishing statistics.  Username: %s, Key: %s", opts.aiouser, opts.aiokey)
+		lg.Warnf("Not publishing statistics.  Username: %s, Key: %s, Room: ", opts.aiouser, opts.aiokey, opts.room)
 	}
 }
 
@@ -327,6 +327,7 @@ func Home(lcd *device.Lcd) error {
 	return err
 }
 
+// publishData to AdaFruit.IO
 func publishData(key string, value string) {
 	if opts.aiouser != "" && opts.aiokey != "" && opts.room != "" {
 		topic := fmt.Sprintf("%s/feeds/%s-%s", opts.aiouser, opts.room, key)
@@ -336,6 +337,7 @@ func publishData(key string, value string) {
 	}
 }
 
+// LogLevel sets the Level of the Log
 func LogLevel(i int) logger.LogLevel {
 	switch i {
 	case 0:
