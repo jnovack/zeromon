@@ -52,6 +52,8 @@ var lcd *device.Lcd
 var client MQTT.Client
 var token MQTT.Token
 var pid pidfile.PidFile
+var runonce = false
+var failures int
 
 // Environment structure of temperature/humidity
 type Environment struct {
@@ -157,6 +159,12 @@ func main() {
 			timestamp := env.GetTimestamp()
 
 			if timestamp.Unix() > 0 {
+				// Just once, raise the log level and print the info for the logs
+				if runonce == false {
+					lg.Notifyf("Initialized: Temperature = %.1f°F, Humidity = %.1f%%, Last Checked = %s, Unix = %d",
+						temp, hum, humanize.Time(timestamp), timestamp.Unix())
+					runonce = true
+				}
 				lg.Infof("Updated: Temperature = %.1f°F, Humidity = %.1f%%, Last Checked = %s, Unix = %d",
 					temp, hum, humanize.Time(timestamp), timestamp.Unix())
 				promTemp.With(prometheus.Labels{"room": opts.room}).Set(float64(temp))
@@ -263,8 +271,12 @@ func readSensor(done chan bool) {
 		env.PutTemperature(float32(temp)*1.8 + 32)
 		env.PutHumidity(float32(hum))
 		env.PutTimestamp(time.Now())
+		failures = 0 // Reset failure count on success, to only fail on Xth time in a row, not total.
 	} else {
+		failures = failures + 1
+		if failures > 10 {
 			FatalExit("readSensor() failed", err)
+		}
 	}
 	done <- true
 }
