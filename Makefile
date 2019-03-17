@@ -25,6 +25,10 @@ deps:
 upgrade:
 	go list -f '{{ join .Imports "\n" }}' | sort | uniq | grep "/" | xargs go get -v -u
 
+.PHONY: update
+update:
+	cp zeromon /usr/local/bin/zeromon
+
 .PHONY: build
 build:
 	go build -ldflags $(GO_LDFLAGS) zeromon.go
