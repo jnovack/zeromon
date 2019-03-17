@@ -51,6 +51,7 @@ var m sync.Mutex
 var lcd *device.Lcd
 var client MQTT.Client
 var token MQTT.Token
+var pid pidfile.PidFile
 
 // Environment structure of temperature/humidity
 type Environment struct {
@@ -262,6 +263,8 @@ func readSensor(done chan bool) {
 		env.PutTemperature(float32(temp)*1.8 + 32)
 		env.PutHumidity(float32(hum))
 		env.PutTimestamp(time.Now())
+	} else {
+			FatalExit("readSensor() failed", err)
 	}
 	done <- true
 }
@@ -352,4 +355,15 @@ func LogLevel(i int) logger.LogLevel {
 	default:
 		return logger.InfoLevel
 	}
+}
+
+// FatalExit On captured failure, print the error, cleanup and exit.
+func FatalExit(msg string, err error) {
+	lg.Fatalf("%s - %s", msg, err.Error())
+	BacklightOff(lcd)
+	_ = pid.Clear()
+	if client != nil {
+		client.Disconnect(250)
+	}
+	os.Exit(0)
 }
